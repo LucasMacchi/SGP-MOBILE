@@ -1,0 +1,9 @@
+{
+    "pendiente": "#c4c42a",
+    "aprobado": "#22d55b",
+    "rechazado": "#ff0000",
+    "cancelado": "#9b1a1aff",
+    "entregado": "#3399ff",
+    "problemas": "#ff9c33",
+    "listo": "#1c9943"
+}
