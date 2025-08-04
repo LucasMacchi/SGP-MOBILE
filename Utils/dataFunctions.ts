@@ -49,3 +49,24 @@ export function getClientes(services: IServicio[]): IClient[] {
     })
     return arr
 }
+
+export function serviceReturner (serviceId: number, services: IServicio[]): string {
+    let srv = ""
+    services.forEach(s => {
+        if(s.service_id === serviceId) {
+            srv = s.service_des
+            return 0
+        }
+    });
+    return srv
+}
+export function clientReturner (clientID: number, services: IServicio[]): string {
+    let clnt = ""
+    services.forEach(s => {
+        if(s.client_id === clientID) {
+            clnt = s.client_des
+            return 0
+        }
+    });
+    return clnt
+}

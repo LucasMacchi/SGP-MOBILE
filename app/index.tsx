@@ -1,15 +1,16 @@
 import { Button, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { logoutFn, sessionChFn } from '../Utils/userFunctions'
-import { useNavigation } from 'expo-router'
+import { Redirect, useNavigation, useRouter } from 'expo-router'
 import Divider from './Componets/Divider'
 import { Picker } from '@react-native-picker/picker'
-import { IClient, IFilter, IServicio } from '../Utils/interfaces'
+import { IClient, IFilter, IPedido, IServicio } from '../Utils/interfaces'
 import { getCcoFn, getClientes } from '../Utils/dataFunctions'
 import orColors from "../Utils/ordersColors.json"
 import RNDateTimePicker from '@react-native-community/datetimepicker'
-import { getPedidosFn } from '../Utils/pedidosFunctions'
+import { getPedidosFn, getStoredPedidos } from '../Utils/pedidosFunctions'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { ScrollView } from 'react-native-gesture-handler'
 
 
 const Home = () => {
@@ -20,6 +21,7 @@ const Home = () => {
   const [clientes, setClientes] = useState<IClient[]>([])
   const [showDateStart, setShwStr] = useState(false)
   const [showDateEnd, setShwEnd] = useState(false)
+  const [pedidos, setPedidos] = useState<IPedido[]>([])
 
   const monthLess = (): string => {
     const date = new Date()
@@ -39,8 +41,10 @@ const Home = () => {
   })
 
   useEffect(() => {
+    //@ts-ignore
     sessionChFn().then(r => r ? nav.navigate("Ingreso") : "")
     getCcoFn().then(ccos => setServicios(ccos))
+    getStoredPedidos().then(pds => setPedidos(pds))
   },[])
 
   const logoutBtn = async () => {
@@ -70,10 +74,38 @@ const Home = () => {
 
   const filtrarPedidos = async () => {
     const res = await getPedidosFn(filter)
+    setPedidos(res)
+  }
+
+  const colorChange = (state: string): string => {
+      switch(state) {
+          case 'Pendiente':
+              return orColors.pendiente
+          case 'Aprobado':
+              return orColors.aprobado
+          case 'Cancelado':
+              return orColors.cancelado
+          case 'Rechazado':
+              return orColors.rechazado
+          case 'Listo':
+              return orColors.listo
+          case 'Entregado':
+              return orColors.entregado
+          case 'Problemas':
+              return orColors.entregado
+          default:
+              return orColors.problemas
+      }
+  }
+
+  const navigateNovedad = (id: number) => {
+    //@ts-ignore
+    nav.navigate("Novedad", {orderId: id})
   }
 
   return (
     <View>
+      <ScrollView style={styles.scrollView} contentContainerStyle={{flexGrow: 1}}>
       <Text style={styles.title}>Tus Pedidos</Text>
       <Divider />
       <View>
@@ -97,15 +129,24 @@ const Home = () => {
         </View>
         <View style={styles.selectView}>
           <Text style={styles.subtitle}>Estado:</Text>
-          <Picker style={styles.filterSelect} onValueChange={(v:number) => setFilter({...filter, service: v})}>
+          <Picker style={styles.filterSelect} onValueChange={(v:string) => setFilter({...filter, state: v})}>
             <Picker.Item key={""} value={""} label={"---"}/>
-            <Picker.Item key={""} value={""} label={"Pendiente"} color={orColors.pendiente}/>
-            <Picker.Item key={""} value={""} label={"Aprobado"} color={orColors.aprobado}/>
-            <Picker.Item key={""} value={""} label={"Rechazado"} color={orColors.rechazado}/>
-            <Picker.Item key={""} value={""} label={"Cancelado"} color={orColors.cancelado}/>
-            <Picker.Item key={""} value={""} label={"Listo"} color={orColors.listo}/>
-            <Picker.Item key={""} value={""} label={"Entregado"} color={orColors.entregado}/>
-            <Picker.Item key={""} value={""} label={"Problemas"} color={orColors.problemas}/>
+            <Picker.Item key={"Pendiente"} value={"Pendiente"} label={"Pendiente"} color={orColors.pendiente}/>
+            <Picker.Item key={"Aprobado"} value={"Aprobado"} label={"Aprobado"} color={orColors.aprobado}/>
+            <Picker.Item key={"Rechazado"} value={"Rechazado"} label={"Rechazado"} color={orColors.rechazado}/>
+            <Picker.Item key={"Cancelado"} value={"Cancelado"} label={"Cancelado"} color={orColors.cancelado}/>
+            <Picker.Item key={"Listo"} value={"Listo"} label={"Listo"} color={orColors.listo}/>
+            <Picker.Item key={"Entregado"} value={"Entregado"} label={"Entregado"} color={orColors.entregado}/>
+            <Picker.Item key={"Problemas"} value={"Problemas"} label={"Problemas"} color={orColors.problemas}/>
+          </Picker>
+        </View>
+        <View style={styles.selectView}>
+          <Text style={styles.subtitle}>Cantidad:</Text>
+          <Picker style={styles.filterSelect} onValueChange={(v:number) => setFilter({...filter, limit: v})}>
+            <Picker.Item value={50} label={"50"}/>
+            <Picker.Item value={100} label={"100"}/>
+            <Picker.Item value={150} label={"150"}/>
+            <Picker.Item value={200} label={"200"}/>
           </Picker>
         </View>
         <View style={styles.selectView}>
@@ -120,14 +161,17 @@ const Home = () => {
           <Button title='filtrar' onPress={filtrarPedidos} />
         </View>
         <View style={styles.pedidoView}>
-          <View style={styles.pedido}>
-            <Text style={styles.pedidoTxt}>3242JL25</Text>
-            <Text style={styles.pedidoTxt}>{filter.dateEnd.split("T")[0]}</Text>
-            <Text style={styles.pedidoTxt}>Aprobado</Text>
-            <FontAwesome name='align-justify' color={"white"}/>
-          </View>
+          {pedidos.length > 0 ? pedidos.map((pd,i) => (
+            <View key={i} style={{...styles.pedido, backgroundColor: colorChange(pd.state)}}>
+              <Text style={styles.pedidoTxt}>{pd.numero}</Text>
+              <Text style={styles.pedidoTxt}>{pd.date_requested.split("T")[0]}</Text>
+              <Text style={styles.pedidoTxt}>{pd.state}</Text>
+              <FontAwesome name='align-justify' size={20} color={"white"} onPress={() => navigateNovedad(pd.order_id)}/>
+            </View>
+          )) : <Text style={styles.subtitle}>No hay pedidos</Text>}
         </View>
       </View>
+      </ScrollView>
     </View>
   )
 }
@@ -137,21 +181,26 @@ export default Home
 const styles = StyleSheet.create({
   pedido: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
-    backgroundColor: orColors.aprobado,
+    justifyContent: "center",
     height: 50,
     alignItems: "center",
     width: 340,
-    borderRadius: 5
+    borderRadius: 5,
+    margin: 5
+  },
+  scrollView: {
+    marginBottom: 20
   },
   pedidoTxt: {
     color: "white",
-    fontWeight: 700
+    fontWeight: 700,
+    width: 95
   },
   pedidoView: {
     flexDirection: "column",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    marginBottom: 100
   },
   link: {
     margin: 150

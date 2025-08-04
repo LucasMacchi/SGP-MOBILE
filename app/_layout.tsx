@@ -4,6 +4,7 @@ import { Stack } from 'expo-router'
 import { createDrawerNavigator, DrawerContent } from '@react-navigation/drawer'
 import Home from "./index"
 import Login from './Login'
+import Novedad from './Novedad'
 const logo = require('../assets/logo_big.png');
 
 const Drawer = createDrawerNavigator()
@@ -15,6 +16,7 @@ const Rootlayout = () => {
     drawerLabelStyle: styles.label,
     drawerItemStyle: styles.item}}>
       <Drawer.Screen name='Pagina Principal' component={Home}/>
+      <Drawer.Screen name='Novedad' component={Novedad} options={{drawerItemStyle: {display: "none"}}}/>
       <Drawer.Screen name='Ingreso' component={Login} options={{drawerItemStyle: {display: "none"},headerLeft: () => null}}/>
     </Drawer.Navigator>
   )
