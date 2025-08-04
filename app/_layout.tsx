@@ -4,7 +4,7 @@ import { Stack } from 'expo-router'
 import { createDrawerNavigator, DrawerContent } from '@react-navigation/drawer'
 import Home from "./index"
 import Login from './Login'
-import Novedad from './Novedad'
+import Novedad from './Pedido'
 const logo = require('../assets/logo_big.png');
 
 const Drawer = createDrawerNavigator()

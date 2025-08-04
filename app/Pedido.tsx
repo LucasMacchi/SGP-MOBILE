@@ -14,7 +14,7 @@ import { sessionChFn } from '../Utils/userFunctions'
 
 interface IOrderId {orderId: number}
 
-const Novedad = () => {
+const Pedido = () => {
     const route = useRoute()
     const nav = useNavigation()
     const [servicios, setServicios] = useState<IServicio[]>([])
@@ -186,7 +186,7 @@ const Novedad = () => {
   )
 }
 
-export default Novedad
+export default Pedido
 
 const styles = StyleSheet.create({
     dataView: {
